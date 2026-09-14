@@ -1,0 +1,48 @@
+# Showcase map: three distinct paths from base to delivery,
+# demonstrating multi-path drone distribution, restricted/priority
+# zones, capacity limits, and a decoy blocked zone.
+
+nb_drones: 9
+
+start_hub: base 0 5 [color=green]
+end_hub: delivery 12 5 [color=yellow]
+
+# --- Path A (north route): base -> gateA -> skyway1 -> skyway2 -> junction ---
+hub: gateA 2 8 [zone=normal color=blue]
+hub: skyway1 5 9 [zone=priority color=yellow max_drones=2]
+hub: skyway2 8 8 [zone=normal color=blue]
+
+# --- Path B (middle route): base -> gateB -> plaza -> junction ---
+hub: gateB 2 5 [zone=normal color=blue max_drones=2]
+hub: plaza 6 5 [zone=priority color=yellow max_drones=3]
+
+# --- Path C (south route): base -> gateC -> tunnel1 -> tunnel2 -> junction ---
+hub: gateC 2 2 [zone=normal color=blue]
+hub: tunnel1 5 1 [zone=restricted color=red]
+hub: tunnel2 8 2 [zone=normal color=blue]
+
+# --- Shared merge point before delivery ---
+hub: junction 10 5 [zone=normal color=green max_drones=3]
+
+# --- Decoy obstacle (unreachable dead-end, not on any path) ---
+hub: storageX 6 8 [zone=blocked color=gray]
+
+# Path A connections
+connection: base-gateA
+connection: gateA-skyway1
+connection: skyway1-skyway2 [max_link_capacity=2]
+connection: skyway2-junction
+
+# Path B connections
+connection: base-gateB
+connection: gateB-plaza [max_link_capacity=2]
+connection: plaza-junction
+
+# Path C connections
+connection: base-gateC
+connection: gateC-tunnel1
+connection: tunnel1-tunnel2
+connection: tunnel2-junction
+
+# Merge to delivery
+connection: junction-delivery [max_link_capacity=3]
