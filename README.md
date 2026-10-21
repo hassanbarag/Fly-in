@@ -1,241 +1,106 @@
-*This project has been created as part of the 42 curriculum by <hassamoh>.*
+# Fly-in 🚁
 
-# Fly-in — Autonomous Drone Fleet Routing Simulation
+**Autonomous Drone Fleet Routing Simulation**
 
 ## Description
 
-**Fly-in** is a turn-based simulation engine that routes a fleet of autonomous
-drones from a central base (`start_hub`) to a target delivery location
-(`end_hub`), across a network of zones with varying movement costs, capacity
-constraints, and access restrictions.
+Fly-in is a Python-based simulation that routes a fleet of autonomous drones through a network of interconnected zones, from a starting hub to a delivery destination, in the fewest possible turns.
 
-The goal is to move **all drones** from start to end in the **fewest possible
-simulation turns**, while respecting:
+The challenge goes beyond finding the shortest path: drones must share limited-capacity zones and connections while respecting movement costs, restricted areas, and scheduling constraints.
 
-- **Zone occupancy limits** (`max_drones`)
-- **Connection (link) capacity limits** (`max_link_capacity`)
-- **Zone-specific movement costs** (`normal`, `priority` = 1 turn,
-  `restricted` = 2 turns, `blocked` = inaccessible)
-- **Conflict-free, deterministic scheduling** — no two drones can violate a
-  capacity constraint on the same turn
-- **Distribution of drones across multiple distinct paths**, rather than
-  funnelling every drone through a single route
+The project combines graph algorithms, object-oriented design, deterministic turn scheduling, and real-time visualization using Pygame.
 
-The project is entirely **object-oriented**, fully **type-safe** (`mypy`),
-`flake8`-compliant, and implements its own graph and pathfinding logic from
-scratch — no `networkx`, `graphlib`, or similar graph libraries are used.
+## ✨ Features
 
-## Features
+- **Custom Graph Engine** — Builds and validates the network without external graph libraries.
+- **Dijkstra’s Algorithm** — Finds minimum-cost routes across zones with different movement costs.
+- **Yen’s K-Shortest Paths** — Discovers alternative loopless routes to distribute drones and reduce bottlenecks.
+- **Capacity-Aware Scheduling** — Enforces zone occupancy and connection throughput limits.
+- **Deterministic Movement** — Resolves competing drone movements in a predictable order.
+- **Restricted-Zone Transit** — Handles zones that require two turns to cross.
+- **Pygame Visualization** — Displays the network and animates drone movements in real time.
+- **Input Validation** — Reports malformed network definitions with line-specific errors.
 
-- **Custom text-based parser** for the network definition format, with
-  precise, line-numbered error messages for malformed input
-- **Graph representation** built entirely from scratch (adjacency lists,
-  zone/connection lookups, duplicate and integrity validation)
-- **Dijkstra's algorithm** for single-source shortest-cost pathfinding
-- **Yen's k-shortest-paths algorithm** built on top of Dijkstra, to compute
-  several distinct loopless routes so drones can be spread across the
-  network instead of bottlenecking on one path
-- **Turn-based simulation engine** that:
-  - Releases zone capacity from drones leaving a zone before granting it to
-    drones arriving, within the same turn
-  - Resolves conflicts deterministically (by drone ID) when multiple drones
-    compete for the same limited resource
-  - Handles multi-turn transits through `restricted` zones correctly (a
-    drone committed to a 2-turn crossing cannot be interrupted)
-  - Detects unresolvable deadlocks via a safety turn-limit
-- **Visual representation** via a `pygame` window: the network is drawn to
-  scale from each zone's coordinates, drones are rendered as custom sprite
-  images, and movement between turns is animated with smooth interpolation
-  rather than instant jumps
+## 🚀 Quick Start
 
-## Instructions
+**Requirements:** Python 3.10+ and Pygame.
 
-### Requirements
-
-- Python 3.10+
-- `pygame` 
-
-### Installation
+Install dependencies:
 
 ```bash
 make install
 ```
 
-This installs all dependencies It only needs
-to be run once (or again after adding a new dependency).
-
-### Running the simulation
+Run the default map:
 
 ```bash
 make run
 ```
-By default this runs the `network.txt`
 
-Or directly, without `make`:
-
-```bash
-python3 main.py network.txt
-```
-
-The program prints each turn's drone movements to the terminal as they
-happen, and opens a `pygame` window animating the same moves visually.
-Closing the window, or pressing `Ctrl+C` in the terminal, exits cleanly at
-any point.
-
-### Other Makefile targets
-
-| Command           | Description                                              |
-|-------------------|-----------------------------------------------------------|
-| `make debug`      | Runs the simulation inside Python's `pdb` debugger        |
-| `make clean`      | Removes `__pycache__` and `.mypy_cache` directories       |
-| `make lint`       | Runs `flake8` and `mypy` with the required flags          |
-| `make lint-strict`| Runs `flake8` and `mypy --strict` for stricter checking   |
-
-### Network file format
-
-See `maps/` The format is documented in full in the
-project subject; in short:
-
-```
-nb_drones: <positive integer>
-start_hub: <name> <x> <y> [metadata]
-end_hub: <name> <x> <y> [metadata]
-hub: <name> <x> <y> [zone=normal|restricted|priority|blocked color=<word> max_drones=<n>]
-connection: <zone1>-<zone2> [max_link_capacity=<n>]
-```
-
-## Example Input & Expected Output
-
-Given the following network file (`maps/easy/02_simple_fork.txt`):
-
-```
-# Easy Level 2: Simple fork with two paths
-nb_drones: 4
-
-start_hub: start 0 0 [color=green]
-hub: junction 1 0 [color=yellow max_drones=2]
-hub: path_a 2 1 [color=blue]
-hub: path_b 2 -1 [color=blue]
-end_hub: goal 3 0 [color=red]
-
-connection: start-junction [max_link_capacity=2]
-connection: junction-path_a
-connection: junction-path_b
-connection: path_a-goal
-connection: path_b-goal
-```
-
-Running:
+Run a custom map:
 
 ```bash
 python3 main.py maps/easy/02_simple_fork.txt
 ```
 
-Produces the following terminal output:
+## 🧠 Routing & Simulation
 
+Fly-in separates route calculation from turn-by-turn movement:
+
+1. **Pathfinding** — Dijkstra computes minimum-cost routes; Yen’s algorithm identifies alternative paths.
+2. **Route Distribution** — Drones can be distributed across distinct routes to reduce congestion.
+3. **Turn Scheduling** — Drones are processed deterministically while zone and connection capacities are enforced.
+4. **Movement & Transit** — Restricted-zone crossings take additional time, and drones wait when a move cannot be completed.
+5. **Termination** — A safety turn limit protects against simulations that cannot make progress.
+
+## 🗺️ Network Model
+
+| Element | Purpose |
+|---|---|
+| `start_hub` / `end_hub` | Define the route origin and destination |
+| `hub` | Represents a zone with coordinates and movement properties |
+| `connection` | Links two zones and may impose a traversal capacity |
+| `max_drones` | Limits the number of drones occupying a zone |
+| `max_link_capacity` | Limits simultaneous use of a connection |
+
+Zone types determine movement behavior: `normal`, `priority`, `restricted`, and `blocked`.
+
+## 🏗️ Architecture
+
+The simulation uses an object-oriented design to separate network data, route planning, and drone movement.
+
+- **Zones and Connections** — Represent the network and its movement and capacity constraints.
+- **Drones** — Track each drone’s progress through the network.
+- **Routing Engine** — Calculates shortest and alternative paths.
+- **Simulation Engine** — Schedules movements and enforces capacity limits.
+- **Pygame Renderer** — Visualizes the network and animates each turn.
+
+## 📁 Project Structure
+
+```text
+Fly-in/
+├── maps/             # Network map definitions
+├── main.py           # Application entry point
+├── Makefile          # Build and development commands
+└── README.md
 ```
-Turn 1: D1-junction D2-junction
-Turn 2: D1-path_a D2-path_b D3-junction D4-junction
-Turn 3: D1-goal D2-goal D3-path_a D4-path_b
-Turn 4: D3-goal D4-goal
-```
 
-Each line represents one simulation turn. Each entry shows a drone and
-the zone it moved to during that turn. Drones that do not move are omitted.
-The simulation automatically distributes drones between the two available
-paths (path_a and path_b) while respecting zone and connection capacity
-limits. A pygame window also displays the same movements in real time.
+## 🧰 Development Tools
 
-## Algorithm Choices & Implementation Strategy
+- **Python 3.10+** — Core implementation
+- **Dijkstra & Yen’s Algorithms** — Graph routing
+- **Pygame** — Real-time visualization
+- **heapq** — Priority queue for pathfinding
+- **mypy & flake8** — Type checking and code quality
 
-**Why Dijkstra instead of BFS:** zones have different movement costs
-(`restricted` zones cost 2 turns instead of 1), so a plain breadth-first
-search — which only minimizes the number of hops — does not necessarily
-find the cheapest route. Dijkstra's algorithm, using a binary heap
-(`heapq`) as its priority queue, correctly accounts for these weighted
-costs in `O((V + E) log V)` time.
+## 🔧 Development Commands
 
-**Why Yen's algorithm for multiple paths:** the subject requires
-distributing drones across multiple paths rather than funnelling all of
-them through a single shortest route. Yen's algorithm repeatedly re-runs a
-constrained version of Dijkstra (excluding zones/connections already used
-by previously found routes) to discover the next-cheapest *distinct*
-loopless path. This lets the simulator hand out drones round-robin across
-several valid routes, significantly reducing congestion on any single
-bottleneck zone or connection — while still fully respecting the original
-capacity model already validated on a single path.
+| Command | Description |
+|---|---|
+| `make install` | Install project dependencies |
+| `make run` | Run the default simulation |
+| `make debug` | Launch the debugger |
+| `make lint` | Run linting and type checks |
+| `make lint-strict` | Run strict type checking and linting |
+| `make clean` | Remove cache directories |
 
-**Turn scheduling (avoiding conflicts and deadlocks):** each simulation
-turn is processed in two phases. First, capacity is released for zones that
-drones are about to leave, since the subject specifies that departing
-drones free up their zone within the same turn they leave it. Second,
-drones are processed in a fixed, deterministic order (sorted by drone ID),
-so that when several drones compete for the same zone or connection
-capacity, the outcome is always reproducible — never randomized. Drones
-that cannot move this turn simply wait and retry the following turn. A
-hard turn-count safety limit guards against unresolved deadlocks causing an
-infinite loop.
-
-**Complexity:** pathfinding is `O((V + E) log V)` per path computed (up to
-a capped number of alternate paths, `MAX_DISTINCT_PATHS = 8`, since
-computing more distinct routes than there are drones brings no benefit).
-The simulation loop itself is `O(D)` per turn, where `D` is the number of
-active drones, since each drone's move is resolved independently against
-pre-computed occupancy dictionaries rather than recomputing the graph.
-Paths are computed once per drone at startup and cached for the entire run,
-not recalculated turn-by-turn.
-
-## Visual Representation
-
-The simulation is rendered live using `pygame`:
-
-- Each zone is drawn as a colored circle at a position scaled from its
-  `(x, y)` coordinates, colored according to its type (`normal`,
-  `restricted`, `priority`, `blocked`, or start/end).
-- Connections are drawn as lines between zones.
-- The static layer (background, zones, connections) is pre-rendered once
-  per run and cached, rather than redrawn from scratch every frame.
-- Each drone is rendered using a custom sprite image, and its movement
-  between two zones each turn is animated using linear interpolation
-  (`lerp`) across a fixed number of frames, producing smooth, continuous
-  motion rather than instant teleporting between zones — making it much
-  easier to visually follow congestion, waiting, and path distribution as
-  they happen.
-- A live turn counter (`Turn: x/y`) is displayed on screen, and the
-  corresponding text output is printed to the terminal in sync with the
-  animation, so both views stay aligned.
-
-This makes it possible to visually confirm, at a glance, that drones are
-being distributed across distinct paths, that capacity limits are being
-respected (drones visibly waiting rather than overlapping a full zone), and
-that restricted-zone transits correctly take two turns.
-
-## Resources
-
-- *Introduction to Algorithms* (CLRS) — Dijkstra's algorithm reference
-- Yen, J. Y. (1971). *"Finding the K Shortest Loopless Paths in a Network."*
-  Management Science — original description of the k-shortest-paths method
-  adapted here
-- [Python `heapq` documentation](https://docs.python.org/3/library/heapq.html)
-- [Pygame documentation](https://www.pygame.org/docs/)
-- [PEP 257 – Docstring Conventions](https://peps.python.org/pep-0257/)
-
-### AI usage
-
-AI assistance (Claude) was used throughout this project as a learning and
-design aid, in line with the curriculum's AI usage guidelines:
-
-- **Concept explanations**: understanding graph theory fundamentals,
-  Dijkstra's algorithm, and Yen's k-shortest-paths algorithm before any
-  code was written.
-- **Design review**: discussing class responsibilities and module
-  boundaries (e.g. why `Zone`/`Connection` are separate from `Graph`
-  logic) before implementation.
-
-- **Pygame guidance**: explaining `pygame` concepts (the game loop, image
-  loading/scaling, linear interpolation for animation) that were then
-  implemented and tested independently.
-
-All source code in this repository was written and typed by hand by the
-author(s) listed above, with the understanding and ability to explain any
-part of it during peer evaluation.
