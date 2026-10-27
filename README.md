@@ -1,6 +1,6 @@
 <p>
-  <img src="assets/animation.gif" alt="Fly-In Simulation Demo" width="70%" />
-  <img src="assets/demo.gif" alt="Fly-In Simulation Demo" width="70%" />
+  <img src="assets/animation.gif" alt="Fly-In Simulation Demo" width="100%" />
+  <img src="assets/demo.gif" alt="Fly-In Simulation Demo" width="100%" />
 </p>
 # Fly-in 🚁
 
