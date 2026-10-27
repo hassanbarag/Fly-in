@@ -40,10 +40,10 @@ class Visualizer:
         graph: Graph,
         drone_image_path: str = "assets/drone.png",
         background_image_path: str = "assets/background.png",
-        window_size: tuple[int, int] = (1000, 1000),
-        drone_size: tuple[int, int] = (32, 32),
+        window_size: tuple[int, int] = (1200, 650),
+        drone_size: tuple[int, int] = (60, 60),
         lerp_steps: int = 30,  # A ●──● B "A ilaa B waxaan rabaa 30 tallaabo."
-        fps: int = 30,
+        fps: int = 20,
     ) -> None:
         """Initialize the visualizer."""
 
