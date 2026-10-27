@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="assets/pygame_simulation.jpg" alt="Fly-In Simulation Preview" width="48%" />
+  &nbsp;&nbsp;
+  <img src="assets/demo.gif" alt="Fly-In Simulation Demo" width="48%" />
+</p>
 # Fly-in 🚁
 
 **Autonomous Drone Fleet Routing Simulation**
